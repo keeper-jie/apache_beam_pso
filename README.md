@@ -10,9 +10,9 @@ parallel PSO using  Apache Beam
 
 ## Enviroment:
 
-​	11th Gen Intel® Core™ i5-11300H @ 3.10GHz × 4 
+​	Intel® Xeon(R) Silver 4114 CPU @ 2.20GHz × 40 
 
-​	Memory:10240MB 
+​	62.5 GiB 
 
 ​	Ubuntu 18.04.6 LTS
 
