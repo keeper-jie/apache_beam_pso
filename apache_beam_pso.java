@@ -17,7 +17,9 @@ import java.io.IOException;
 public class apache_beam_pso {
 
     /**
-     * map the particle's update message with the neighborhood's id.
+     * Send particle update messages to neighbors.
+     * input: String
+     * output: KV<Integer, String>
      */
     public static class map_pso extends DoFn<String, KV<Integer, String>> {
         @ProcessElement
@@ -68,6 +70,8 @@ public class apache_beam_pso {
 
     /**
      * reduce the particle's message with the same id and update particle_best_fitness and particle_best.
+     * input: KV<Integer, Iterable<String>
+     * output: String
      */
     public static class reduce_pso extends DoFn<KV<Integer, Iterable<String>>, String> {
         @ProcessElement
@@ -102,12 +106,14 @@ public class apache_beam_pso {
 
     /**
      * input a line,output update particle's string
+     * input: PCollection<String> lines
+     * output: PCollection<String> reduce_pso
      */
     public static class CountWords
             extends PTransform<PCollection<String>, PCollection<String>> {
         @Override
         public PCollection<String> expand(PCollection<String> lines) {
-//            //map:convert lines of text into particle's and update each particle
+//            //map:convert lines of text to particle and update each particle
 //            PCollection<KV<Integer, String>> map_pso = lines.apply(ParDo.of(new map_pso()));
 //            //shuffle
 //            PCollection<KV<Integer, Iterable<String>>> shuffle_pso = map_pso.apply(GroupByKey.<Integer, String>create());
@@ -123,7 +129,7 @@ public class apache_beam_pso {
     }
 
     /**
-     * input and output parameter
+     * Interface: Manage input and output file addresses
      */
     public interface WordCountOptions extends PipelineOptions {
         @Description("Path of the file to read from")
@@ -139,23 +145,24 @@ public class apache_beam_pso {
 
     /**
      * pipeline
+     * input: WordCountOptions options
+     * output: null
      */
     static void runWordCount(WordCountOptions options) throws IOException {
 //        for (int experiment_time = 0; experiment_time < 100; experiment_time++) {
         double startTime = System.nanoTime();
         Pipeline p = Pipeline.create(options);
-        String input_pso = "/share/word-count-beam/src/main/java/apache_beam_pso/pso_init_10000particle_1000dimension.txt";
+        String input_pso = "/share/word-count-beam/src/main/java/apache_beam_pso/pso_init_sphere_2000particle_200dimension.txt";
 //        String input_pso = options.getInputFile();
-
         //init pso
         PCollection<String> init_pso = p.apply("ReadLines", TextIO.read().from(input_pso));
-        double iteration = 100;
+        double iteration = 10;
         for (int i = 0; i < iteration; i++) {
             init_pso = init_pso.apply("beam_pso", new CountWords());
 //            String output_pso = "/share/word-count-beam/src/main/java/org/apache/beam/examples/beam_pso_output_sphere_500particle_2000iteration_100dimension_" + i + ".txt";
 //            init_pso.apply("WriteSwarm", TextIO.write().withoutSharding().to(output_pso));
         }
-        String output_pso = "/share/word-count-beam/src/main/java/org/apache/beam/examples/apache_beam_pso_output_sphere_10000particle_1iteration_1000dimension.txt";
+        String output_pso = "/share/word-count-beam/src/main/java/org/apache/beam/examples/output_pso_init_sphere_2000particle_200dimension.txt";
 //        String output_pso = options.getOutput();
         init_pso.apply("result_output", TextIO.write().withoutSharding().to(output_pso));
         p.run().waitUntilFinish();
@@ -163,7 +170,7 @@ public class apache_beam_pso {
         //record execute time
         double endTime = System.nanoTime();
         double duration = (endTime - startTime) / 1000000000;  //divide by 1000000000 to get seconds.
-        String path = "/share/word-count-beam/src/main/java/org/apache/beam/examples/apache_beam_pso_time_sphere_10000particle_1iteration_1000dimension.txt";
+        String path = "/share/word-count-beam/src/main/java/org/apache/beam/examples/time_pso_init_sphere_2000particle_200dimension.txt";
         particle.write_file(path, duration, true);
         System.out.println(duration);
 //        }
@@ -171,6 +178,8 @@ public class apache_beam_pso {
 
     /**
      * main
+     * input: String[] args
+     * output: null
      */
     public static void main(String[] args) throws IOException {
         WordCountOptions options =
