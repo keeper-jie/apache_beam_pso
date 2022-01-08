@@ -12,8 +12,15 @@ import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-
+/*
+* mapreduce pso class(including map and reduce class)
+*/
 public class mapreduce_pso {
+    /*
+    * mapreduce_pso map sphere
+    * input: <Object, Text>
+    * output: <IntWritable, Text>
+    */
     public static class PSOMapper
             extends Mapper<Object, Text, IntWritable, Text> {
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
@@ -49,6 +56,11 @@ public class mapreduce_pso {
         }
     }
 
+    /*
+     * mapreduce_pso reduce sphere
+     * input: <IntWritable, Text>
+     * output: <NullWritable, Text>
+     */
     public static class PSOReducer
             extends Reducer<IntWritable, Text, NullWritable, Text> {
         public void reduce(IntWritable key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
@@ -82,14 +94,14 @@ public class mapreduce_pso {
     * main
     */
     public static void main(String[] args) throws Exception {
-        for (int experiment_time = 0; experiment_time < 10; experiment_time++) {
+        for (int experiment_time = 0; experiment_time < 5; experiment_time++) {
             double startTime = System.nanoTime();
             Configuration conf = new Configuration();
             FileSystem fs = FileSystem.get(new Configuration());
 
             //iteration times
             int count = 1000;
-            String input = "/share/word-count-beam/src/main/java/apache_beam_pso/pso_init_2000.txt";
+            String input = "/share/word-count-beam/src/main/java/apache_beam_pso/pso_init_generalized_griewank_500particle_30dimension.txt";
             String output = null;
             for (int i = 0; i < count; i++) {
                 Job job = Job.getInstance(conf, "mapreduce_pso");
@@ -102,7 +114,7 @@ public class mapreduce_pso {
 
                 job.setOutputKeyClass(Text.class);
                 job.setOutputValueClass(Text.class);
-                output = "/share/wordcount/src/main/java/mapreduce_pso/generalized_griewank_2000particle_1iteration/mapreduece_pso_output" + i;
+                output = "/share/wordcount/src/main/java/output_pso_init_generalized_griewank_500particle_30dimension"+experiment_time+"/mapreduece_pso_output_" + i;
                 fs.delete(new Path(output), true);
                 FileInputFormat.addInputPath(job, new Path(input));
                 FileOutputFormat.setOutputPath(job, new Path(output));
@@ -112,7 +124,7 @@ public class mapreduce_pso {
             }
             double endTime = System.nanoTime();
             double duration = (endTime - startTime) / 1000000000;  //divide by 1000000000 to get seconds.
-            String path = "/share/wordcount/src/main/java/mapreduce_pso_time_generalized_griewank_2000particle_1iteration.txt";
+            String path = "/share/wordcount/src/main/java/time_pso_init_generalized_griewank_500particle_30dimension.txt";
             particle.write_file(path, duration, true);
             System.out.println(duration);
         }
