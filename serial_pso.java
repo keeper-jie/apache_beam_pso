@@ -189,6 +189,6 @@ public class pso {
             writer.write(str + System.lineSeparator());
         }
         writer.close();
-        System.out.printlns(particle.swarm_best_fitness);
+        System.out.println(particle.swarm_best_fitness);
     }
 }
