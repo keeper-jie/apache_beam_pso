@@ -1,6 +1,6 @@
 # Apache Beam PSO
 
-## introduction:
+## Introduction:
 
 parallel PSO using  Apache Beam
 
